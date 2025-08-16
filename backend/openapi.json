@@ -1,0 +1,257 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Employee Demo API",
+    "version": "1.0.0",
+    "description": "Simple Express API for access codes and employee management"
+  },
+  "servers": [
+    { "url": "http://localhost:4000" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Health" },
+                "examples": { "ok": { "value": { "ok": true } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/CreateNewAccessCode": {
+      "post": {
+        "summary": "Create a new access code for a phone number",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phoneNumber"],
+                "properties": { "phoneNumber": { "type": "string", "example": "+1234567890" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated access code",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccessCodeResponse" }
+              }
+            }
+          },
+          "400": { "description": "Missing phoneNumber", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/owner/ValidateAccessCode": {
+      "post": {
+        "summary": "Validate owner access code by phone number",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accessCode", "phoneNumber"],
+                "properties": {
+                  "accessCode": { "type": "string", "pattern": "^\\d{6}$", "example": "123456" },
+                  "phoneNumber": { "type": "string", "example": "+1234567890" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Success", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Success" } } } },
+          "400": { "description": "Missing fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "401": { "description": "Invalid code", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } }
+        }
+      }
+    },
+    "/owner/GetEmployee": {
+      "post": {
+        "summary": "Get employee by ID",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["employeeId"],
+                "properties": { "employeeId": { "type": "string", "example": "e5b9a2b0-2b7e-4c6f-8f1b-9d5e7a8c1234" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Employee found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Employee" } } } },
+          "400": { "description": "Missing employeeId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/owner/CreateEmployee": {
+      "post": {
+        "summary": "Create a new employee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "department"],
+                "properties": {
+                  "name": { "type": "string", "example": "John Doe" },
+                  "email": { "type": "string", "format": "email", "example": "john@example.com" },
+                  "department": { "type": "string", "example": "Engineering" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateEmployeeResponse" } } } },
+          "400": { "description": "Missing fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } }
+        }
+      }
+    },
+    "/owner/DeleteEmployee": {
+      "post": {
+        "summary": "Delete employee by ID",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["employeeId"],
+                "properties": { "employeeId": { "type": "string", "example": "e5b9a2b0-2b7e-4c6f-8f1b-9d5e7a8c1234" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Deleted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Success" } } } },
+          "400": { "description": "Missing employeeId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "404": { "description": "Not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } }
+        }
+      }
+    },
+    "/employee/LoginEmail": {
+      "post": {
+        "summary": "Generate and email an access code for an employee email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": { "email": { "type": "string", "format": "email", "example": "jane@example.com" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generated access code", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AccessCodeResponse" } } } },
+          "400": { "description": "Missing email", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/employee/ValidateAccessCode": {
+      "post": {
+        "summary": "Validate employee access code by email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accessCode", "email"],
+                "properties": {
+                  "accessCode": { "type": "string", "pattern": "^\\d{6}$", "example": "654321" },
+                  "email": { "type": "string", "format": "email", "example": "jane@example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Success", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Success" } } } },
+          "400": { "description": "Missing fields", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "401": { "description": "Invalid code", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessError" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": { "ok": { "type": "boolean" } },
+        "required": ["ok"]
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "department": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "email", "department", "createdAt"]
+      },
+      "AccessCodeResponse": {
+        "type": "object",
+        "properties": {
+          "accessCode": { "type": "string", "pattern": "^\\d{6}$" }
+        },
+        "required": ["accessCode"]
+      },
+      "CreateEmployeeResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "employeeId": { "type": "string", "example": "e5b9a2b0-2b7e-4c6f-8f1b-9d5e7a8c1234" }
+        },
+        "required": ["success", "employeeId"]
+      },
+      "Success": {
+        "type": "object",
+        "properties": { "success": { "type": "boolean", "example": true } },
+        "required": ["success"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": { "error": { "type": "string" } },
+        "required": ["error"]
+      },
+      "SuccessError": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": { "type": "string" }
+        },
+        "required": ["success", "error"]
+      }
+    }
+  }
+}
