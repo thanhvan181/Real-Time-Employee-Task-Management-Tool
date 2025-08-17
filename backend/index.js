@@ -49,37 +49,58 @@ function generateAccessCode() {
 }
 
 
+// --- Email setup ---
 let transporter = null
 let mailFrom = null
+const EMAIL_DISABLED = String(process.env.DISABLE_EMAIL || '').toLowerCase() === 'true' || String(process.env.EMAIL_MODE || '').toLowerCase() === 'mock'
 
 async function initMailer() {
+  if (EMAIL_DISABLED) {
+    console.log('[mail] Email sending is disabled (mock mode). Codes will be logged to console only.')
+    transporter = null
+    mailFrom = null
+    return
+  }
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT || 587),
       secure: false,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      connectionTimeout: 5000,
+      socketTimeout: 7000,
     })
     mailFrom = process.env.MAIL_FROM || process.env.SMTP_USER
   } else {
-    
-    const account = await nodemailer.createTestAccount()
-    transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: account.user,
-        pass: account.pass,
-      },
-    })
-    mailFrom = account.user
-    console.log('Using Ethereal test SMTP account. Login URL will be logged after sending emails.')
+    // Fallback to Ethereal test account for local dev
+    try {
+      const account = await nodemailer.createTestAccount()
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: account.user,
+          pass: account.pass,
+        },
+        connectionTimeout: 5000,
+        socketTimeout: 7000,
+      })
+      mailFrom = account.user
+      console.log('Using Ethereal test SMTP account. Login URL will be logged after sending emails.')
+    } catch (e) {
+      console.warn('[mail] Failed to init Ethereal SMTP, switching to mock mode. Error:', e?.message)
+      transporter = null
+      mailFrom = null
+    }
   }
 }
 
 async function sendCodeEmail(to, code) {
-  if (!transporter) await initMailer()
+  if (EMAIL_DISABLED || !transporter) {
+    console.log(`[mail:mock] To: ${to} | Code: ${code}`)
+    return { mock: true }
+  }
   const info = await transporter.sendMail({
     from: mailFrom,
     to,
@@ -87,9 +108,11 @@ async function sendCodeEmail(to, code) {
     text: `Your access code is: ${code}`,
     html: `<p>Your access code is: <b>${code}</b></p>`
   })
-  if (nodemailer.getTestMessageUrl(info)) {
-    console.log('Preview URL:', nodemailer.getTestMessageUrl(info))
+  const preview = nodemailer.getTestMessageUrl(info)
+  if (preview) {
+    console.log('Preview URL:', preview)
   }
+  return { preview }
 }
 
 
@@ -247,14 +270,15 @@ app.post('/employee/LoginEmail', async (req, res) => {
     db.employeeAccessCodes[email] = code
     await writeDB(db)
 
+    let mailMeta = null
     try {
-      await sendCodeEmail(email, code)
+      mailMeta = await sendCodeEmail(email, code)
     } catch (mailErr) {
-      console.error('Email send failed:', mailErr)
-   
+      console.error('Email send failed:', mailErr?.message || mailErr)
+      // Still return the code for testing purposes
     }
 
-    res.json({ accessCode: code })
+    res.json({ accessCode: code, mail: mailMeta || { sent: false } })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Internal server error' })

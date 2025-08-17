@@ -1,73 +1,70 @@
 {
   "ownerAccessCodes": {
-    "+1234567890": "",
-    "0982882761": ""
+    "499536": "580146",
+    "0987762151": "",
+    "minh.nguyen@example.com": "",
+    "0987764112": ""
   },
   "employeeAccessCodes": {
-    "jane@example.com": "816433",
-    "van@gmail.com": "",
-    "cosawuvur@mailinator.com": "",
-    "1234@gmail.com": ""
+    "nhung.pham@example.com": "",
+    "minh.nguyen@example.com": "",
+    "lan.vu@example.com": ""
   },
   "employees": {
-    "466db1e1-c755-47af-a9bc-a74453933468": {
-      "id": "466db1e1-c755-47af-a9bc-a74453933468",
-      "name": "Nam non consequatur",
-      "email": "vomopu@mailinator.com",
-      "phone": "+1 (433) 717-9613",
-      "address": "Maiores sed sit qui",
+    "d93c6831-4d64-48ab-addd-f1199e8f6555": {
+      "id": "d93c6831-4d64-48ab-addd-f1199e8f6555",
+      "name": "Pham Thi Nhung",
+      "email": "nhung.pham@example.com",
+      "phone": "+84 912 111 010",
+      "address": "77 Lý Thường Kiệt, TP.HCM",
       "role": "user",
       "status": "active",
-      "createdAt": "2025-08-16T14:54:22.243Z"
+      "createdAt": "2025-08-17T03:56:47.488Z"
     },
-    "42c94016-b798-4757-8ba2-7dc01c63ac7a": {
-      "id": "42c94016-b798-4757-8ba2-7dc01c63ac7a",
-      "name": "Velit excepteur qui",
-      "email": "cosawuvur@mailinator.com",
-      "phone": "+1 (557) 921-4836",
-      "address": "Optio voluptas nihi",
-      "role": "admin",
-      "status": "active",
-      "createdAt": "2025-08-16T14:55:08.400Z"
-    },
-    "16265b82-fd51-40d4-84e4-0b8daeb0cc60": {
-      "id": "16265b82-fd51-40d4-84e4-0b8daeb0cc60",
-      "name": "dfh",
-      "email": "1234@gmail.com",
-      "phone": "09298276290",
-      "address": "ba trung",
+    "711a7da3-8b4b-466a-bdb2-718a334e166e": {
+      "id": "711a7da3-8b4b-466a-bdb2-718a334e166e",
+      "name": "Nguyen Van Minh",
+      "email": "minh.nguyen@example.com",
+      "phone": "0 912 111 009",
+      "address": "55 Nguyễn Văn Cừ, Hà Nội",
       "role": "user",
       "status": "active",
-      "createdAt": "2025-08-16T14:56:08.294Z"
+      "createdAt": "2025-08-17T03:57:33.932Z"
     }
   },
   "chats": {
-    "466db1e1-c755-47af-a9bc-a74453933468": [
+    "d93c6831-4d64-48ab-addd-f1199e8f6555": [
       {
-        "id": "304f968d-9b72-4a87-a0e9-3b096cd32d18",
+        "id": "cc768cff-29d8-4f8d-8406-af8554554f41",
         "from": "owner",
-        "text": "hello",
-        "at": "2025-08-16T14:56:47.036Z"
+        "text": "Nhung ơi tý đi chơi không?",
+        "at": "2025-08-17T03:59:24.973Z"
       },
       {
-        "id": "37c91237-f377-4570-98f6-096c7d30fe71",
-        "from": "owner",
-        "text": "good night",
-        "at": "2025-08-16T14:57:48.686Z"
+        "id": "e3b39a4e-502b-4b01-ace1-d25cff738c92",
+        "from": "employee",
+        "text": "đi chỗ nào đó",
+        "at": "2025-08-17T03:59:40.607Z"
       }
     ],
-    "16265b82-fd51-40d4-84e4-0b8daeb0cc60": [
+    "711a7da3-8b4b-466a-bdb2-718a334e166e": [
       {
-        "id": "75c504aa-42ac-4fa7-93d0-a6245b19d319",
+        "id": "80442198-2408-4881-b151-b75a05fde97f",
         "from": "owner",
-        "text": "hi",
-        "at": "2025-08-16T14:59:02.473Z"
+        "text": "minh oi",
+        "at": "2025-08-17T04:14:16.324Z"
       },
       {
-        "id": "6aa413a2-75f7-4afd-a25c-4b9de44132c5",
+        "id": "27f235dc-200e-49ac-a688-429e273613fd",
+        "from": "employee",
+        "text": "oi",
+        "at": "2025-08-17T04:14:36.757Z"
+      },
+      {
+        "id": "dd16b0e9-ba0a-4905-86cf-eb618135499c",
         "from": "owner",
-        "text": "good",
-        "at": "2025-08-16T14:59:41.189Z"
+        "text": "cậu đang làm gì đó?",
+        "at": "2025-08-17T04:49:02.270Z"
       }
     ]
   }

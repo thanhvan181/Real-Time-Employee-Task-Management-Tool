@@ -10,9 +10,12 @@ const BellIcon = () => (
   </svg>
 );
 
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+
+
+const ChatIcon = ({ className = 'h-5 w-5' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12c0 4.418-4.03 8-9 8-1.209 0-2.367-.2-3.43-.566L3 20l1.566-5.57C4.2 13.367 4 12.209 4 11c0-4.418 4.03-8 9-8s8 3.582 8 8z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h8M8 14h6" />
   </svg>
 );
 
@@ -173,9 +176,26 @@ const ManageEmployee = () => {
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
                         </span>
                     </div>
-                    <div className="ml-6">
-                        <UserIcon />
-                    </div>
+                    {/* Logged-in user info */}
+                    {(() => {
+                      const phone = localStorage.getItem('phone') || '';
+                      const email = sessionStorage.getItem('email') || localStorage.getItem('email') || '';
+                      const isAdmin = !!phone;
+                      const displayName = isAdmin ? 'admin' : (email || 'Guest');
+                      const subtitle = '';
+                      const initial = (displayName?.[0] || '?').toUpperCase();
+                      return (
+                        <div className="ml-6 flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold">
+                            {initial}
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-medium text-gray-800">{displayName}</div>
+                            {subtitle ? <div className="text-xs text-gray-500">{subtitle}</div> : null}
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </header>
 
                
@@ -257,8 +277,10 @@ const ManageEmployee = () => {
                                                     <button
                                                         className="bg-gray-500 text-white px-5 py-2 rounded-lg hover:bg-gray-600"
                                                         onClick={() => handleOpenChat(emp)}
+                                                        title="Chat"
+                                                        aria-label={`Chat with ${emp.name || emp.email}`}
                                                     >
-                                                        Chat
+                                                        <ChatIcon className="h-5 w-5" />
                                                     </button>
                                                     <button
                                                         className="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600"

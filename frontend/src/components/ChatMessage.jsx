@@ -26,35 +26,48 @@ const MessagePage = () => {
     const socketRef = useRef(null);
     const listRef = useRef(null);
 
+    const OWNER_NAME = useMemo(() => (process.env.REACT_APP_OWNER_NAME || 'Nguyen Van Minh'), []);
+    const currentEmail = useMemo(() => (sessionStorage.getItem('email') || localStorage.getItem('email') || ''), []);
+    const myRole = useMemo(() => {
+        if (selected?.email && currentEmail && selected.email.toLowerCase() === currentEmail.toLowerCase()) return 'employee';
+        return 'owner';
+    }, [selected?.email, currentEmail]);
+
+    const selectedIdRef = useRef(null);
+    useEffect(() => { selectedIdRef.current = selected?.id || null; }, [selected?.id]);
+
     useEffect(() => {
         let active = true;
         listEmployees()
             .then((list) => {
                 if (!active) return;
-                setEmployees(Array.isArray(list) ? list : []);
-                
-                if (Array.isArray(list) && list.length && !selected) {
-                    setSelected(list[0]);
-                }
+                const arr = Array.isArray(list) ? list : [];
+                setEmployees(arr);
             })
             .catch(() => {})
         return () => { active = false; };
     }, []);
 
+    useEffect(() => {
+        if (!employees.length) {
+            if (selected !== null) setSelected(null);
+            return;
+        }
+        if (!selected || !employees.find(e => e.id === selected.id)) {
+            setSelected(employees[0]);
+        }
+    }, [employees, selected]);
 
     useEffect(() => {
         const socket = io(API_BASE_URL, { autoConnect: true });
         socketRef.current = socket;
 
         socket.on('connect', () => {
-           
-            if (selected?.id) {
-                socket.emit('join', { employeeId: selected.id, role: 'owner' });
-            }
+            
         });
 
         socket.on('chat:message', (msg) => {
-            if (!selected?.id || msg?.employeeId !== selected.id) return;
+            if (!selectedIdRef.current || msg?.employeeId !== selectedIdRef.current) return;
             setMessages((prev) => [...prev, { id: msg.id, from: msg.from, text: msg.text, at: msg.at }]);
         });
 
@@ -96,11 +109,18 @@ const MessagePage = () => {
         if (!text || !selected?.id) return;
         const socket = socketRef.current;
         if (!socket) return;
-        socket.emit('chat:message', { employeeId: selected.id, from: 'owner', text });
+        socket.emit('chat:message', { employeeId: selected.id, from: myRole, text });
         setInput('');
     };
 
-    const selectedName = useMemo(() => selected?.name || 'Employee', [selected]);
+
+    const headerTitle = useMemo(() => {
+        if (!selected) return 'Select a conversation';
+        const otherName = myRole === 'owner'
+            && (selected?.name || selected?.email || 'Employee')
+           
+        return `Chat with ${otherName}`;
+    }, [selected, myRole]);
 
     return (
         <div className="flex h-screen bg-white font-sans">
@@ -110,14 +130,14 @@ const MessagePage = () => {
                 <nav className="px-6">
                     <ul>
                         <li>
-                            <a href="#" className="flex items-center py-2.5 px-4 text-gray-600 hover:bg-gray-100 rounded">
+                            <button type="button" className="flex items-center py-2.5 px-4 text-gray-600 hover:bg-gray-100 rounded w-full text-left">
                                 Manage Task
-                            </a>
+                            </button>
                         </li>
                         <li>
-                            <a href="#" className="flex items-center py-2.5 px-4 bg-blue-50 text-blue-600 border-l-4 border-blue-500 font-semibold">
+                            <button type="button" className="flex items-center py-2.5 px-4 bg-blue-50 text-blue-600 border-l-4 border-blue-500 font-semibold w-full text-left" aria-current="page">
                                 Message
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </nav>
@@ -134,9 +154,24 @@ const MessagePage = () => {
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
                         </span>
                     </div>
-                    <div className="ml-6">
-                        <UserIcon className="h-9 w-9 text-gray-400 bg-gray-200 rounded-full p-1" />
-                    </div>
+                    {/* Logged-in user info */}
+                    {(() => {
+                      const phone = localStorage.getItem('phone') || '';
+                      const email = sessionStorage.getItem('email') || localStorage.getItem('email') || '';
+                      const isAdmin = !!phone;
+                      const displayName = isAdmin ? 'admin' : (email || 'Guest');
+                      const initial = (displayName?.[0] || '?').toUpperCase();
+                      return (
+                        <div className="ml-6 flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold">
+                            {initial}
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-medium text-gray-800">{displayName}</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </header>
 
                 
@@ -152,6 +187,9 @@ const MessagePage = () => {
                                 <div className="flex items-center mb-1">
                                     <UserIcon className="h-8 w-8 text-gray-500 mr-3"/>
                                     <span className="font-bold text-gray-800">{emp.name}</span>
+                                    {(sessionStorage.getItem('email') || localStorage.getItem('email')) === (emp.email || '') && (
+                                        <span className="ml-2 text-xs text-gray-500">(You)</span>
+                                    )}
                                 </div>
                                 <p className="text-gray-500 text-sm">{emp.email}</p>
                             </button>
@@ -165,15 +203,15 @@ const MessagePage = () => {
                     <div className="flex-1 flex flex-col bg-gray-100 rounded-xl">
                        
                         <div className="px-4 py-3 border-b flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-800">{selected ? `Chat with ${selectedName}` : 'Select a conversation'}</h3>
+                            <h3 className="text-lg font-semibold text-gray-800">{headerTitle}</h3>
                         </div>
 
             
                         <div ref={listRef} className="flex-1 p-6 overflow-y-auto space-y-3">
                             {loading && <div className="text-sm text-gray-500">Loading…</div>}
                             {selected && messages.map((m) => (
-                                <div key={m.id || m.at} className={`flex ${m.from === 'owner' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`${m.from === 'owner' ? 'bg-blue-600 text-white' : 'bg-white border'} max-w-[75%] px-3 py-2 rounded-lg text-sm shadow-sm`}>
+                                <div key={m.id || m.at} className={`flex ${m.from === myRole ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`${m.from === myRole ? 'bg-blue-600 text-white  text-end' : 'bg-white border  text-start'} max-w-[75%] px-3 py-2 rounded-lg text-sm shadow-sm`}>
                                         <div className="whitespace-pre-wrap break-words">{m.text}</div>
                                         <div className="text-[10px] opacity-70 mt-1">{new Date(m.at).toLocaleString()}</div>
                                     </div>

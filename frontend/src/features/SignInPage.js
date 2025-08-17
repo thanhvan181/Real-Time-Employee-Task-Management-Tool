@@ -47,6 +47,7 @@ export default function SignInPage() {
       alert("Login successful!");
       localStorage.setItem("phone", phone);
       localStorage.removeItem("email");
+      sessionStorage.removeItem("email");
       navigate('/manage');
     } catch (err) {
       alert(err.message || "Invalid code");
@@ -78,7 +79,9 @@ export default function SignInPage() {
     try {
       await validateEmployeeAccessCode(code, email);
       alert("Login successful!");
-      localStorage.setItem("email", email);
+      sessionStorage.setItem("email", email);
+      localStorage.removeItem("email");
+    
       localStorage.removeItem("phone");
       navigate('/messages');
     } catch (err) {

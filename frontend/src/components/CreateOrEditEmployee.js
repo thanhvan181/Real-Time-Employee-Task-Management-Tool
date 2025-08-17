@@ -1,4 +1,3 @@
-// src/components/CreateOrEditEmployee.js
 import React, { useEffect, useState } from 'react';
 
 const CreateEmployeeModal = ({

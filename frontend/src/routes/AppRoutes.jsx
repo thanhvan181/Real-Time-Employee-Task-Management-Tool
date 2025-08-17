@@ -6,7 +6,7 @@ import MessagePage from '../components/ChatMessage';
 
 function getRole() {
   const phone = localStorage.getItem('phone');
-  const email = localStorage.getItem('email');
+  const email = sessionStorage.getItem('email') || localStorage.getItem('email');
   if (phone) return 'admin';
   if (email) return 'user';
   return null;
